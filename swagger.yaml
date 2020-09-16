@@ -1,718 +1,713 @@
----
-swagger: "2.0"
+openapi: 3.0.0
 info:
-  description: "This is a sample server Petstore server.  You can find out more about\
-    \ Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).\
-    \  For this sample, you can use the api key `special-key` to test the authorization\
-    \ filters."
-  version: "1.0.5"
-  title: "Swagger Petstore"
-  termsOfService: "http://swagger.io/terms/"
-  contact:
-    email: "apiteam@swagger.io"
-  license:
-    name: "Apache 2.0"
-    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "petstore.swagger.io"
-basePath: "/v2"
-tags:
-- name: "pet"
-  description: "Everything about your Pets"
-  externalDocs:
-    description: "Find out more"
-    url: "http://swagger.io"
-- name: "store"
-  description: "Access to Petstore orders"
-- name: "user"
-  description: "Operations about user"
-  externalDocs:
-    description: "Find out more about our store"
-    url: "http://swagger.io"
-schemes:
-- "https"
-- "http"
+  title: FinsightAPI
+  description:
+    "FinsightAPI provides developers with personalized financial insights and financial analytics for their end users. The API's core functionality takes user transactions, accounts, and data and returns advice we call Finsights asynchronously through use of webhooks.
+
+    FinsightAPI also enables Fingineers, human curators of our advice, to parse through mounds of financial data to produce new insights to further enhance end user experience."
+  version: 2.1.0
+servers:
+  - url: https://finsightapi-dev.herokuapp.com/api
+    description: Development environment for FinsightAPI
+  - url: https://finsightapi.herokuapp.com/api
+    description: Production environment for FinsightAPI
 paths:
-  /pet/{petId}/uploadImage:
+  /users:
     post:
-      tags:
-      - "pet"
-      summary: "uploads an image"
-      description: ""
-      operationId: "uploadFile"
-      consumes:
-      - "multipart/form-data"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "petId"
-        in: "path"
-        description: "ID of pet to update"
+      summary: Post User profiles to the FinsightAPI.
+      description: Enables clients to send key user metrics and details to permit FinsightAPI to make better, more personalized recommendations on the transactions it receives for that particular client.
+      requestBody:
         required: true
-        type: "integer"
-        format: "int64"
-      - name: "additionalMetadata"
-        in: "formData"
-        description: "Additional data to pass to server"
-        required: false
-        type: "string"
-      - name: "file"
-        in: "formData"
-        description: "file to upload"
-        required: false
-        type: "file"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                users:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      uid:
+                        type: string
+                        description: "[required] A unique alphanumeric identifier for a single user in a client's system."
+                        example: "1pfmZehrgenWog4kfn3pI4sd"
+                      email:
+                        type: string
+                        description: A users registration email.
+                        example: me@mysite.com
+                      firstName:
+                        type: string
+                        description: The user's given name.
+                        example: Jack
+                      lastName:
+                        type: string
+                        description: The user's surname.
+                        example: Ryan
+                      untransferredSavings:
+                        type: number
+                        description: "[required--should be 0] The amount of money the user has found through FinGoal that they have not yet transferred."
+                        example: 65.43
+                      lifetimeSavings:
+                        type: number
+                        description: "[required -- should be 0] The amount of money the user has found during their time using FinGoal."
+                        example: 430.00
+                      accounts:
+                        type: array
+                        items:
+                          type: number
+                        description: The Ids of the accounts the user has connected to the FinsightAPI.
+                        example: [235434]
+                      preferredCategories:
+                        type: array
+                        items:
+                          type: string
+                        description: Categories the user flagged as key spending verticals where they want to find the most money.
+                        example: ["grocery", "travel"]
+                      phone:
+                        type: string
+                        description: A cell number for a user to opt into FinsightAPI advice texts.
+                        example: "2222222222"
+                      deliveryMethod:
+                        type: string
+                        description: If a user has opted into advice digests, specifies how they will receive their digest. Value can be 'text', 'email', or 'text/email'
+                        example: text
+                      deliveryFrequency:
+                        type: string
+                        description: If a user has opted into advice digests, specifies how often they will receive their digest. Value can be 'daily', 'weekly', or 'monthly'.
+                        example: daily
       responses:
         200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/ApiResponse"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-  /pet:
+          description: A JSON message indicating successful POST completion.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: success
+
+  /accounts:
     post:
-      tags:
-      - "pet"
-      summary: "Add a new pet to the store"
-      description: ""
-      operationId: "addPet"
-      consumes:
-      - "application/json"
-      - "application/xml"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Pet object that needs to be added to the store"
+      summary: Create Account items in FinsightAPI.
+      description: Takes user accounts and adds them to the FinsightAPI so transactions can be mapped to specific accounts.
+      requestBody:
         required: true
-        schema:
-          $ref: "#/definitions/Pet"
-      responses:
-        405:
-          description: "Invalid input"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-    put:
-      tags:
-      - "pet"
-      summary: "Update an existing pet"
-      description: ""
-      operationId: "updatePet"
-      consumes:
-      - "application/json"
-      - "application/xml"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Pet object that needs to be added to the store"
-        required: true
-        schema:
-          $ref: "#/definitions/Pet"
-      responses:
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Pet not found"
-        405:
-          description: "Validation exception"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-  /pet/findByStatus:
-    get:
-      tags:
-      - "pet"
-      summary: "Finds Pets by status"
-      description: "Multiple status values can be provided with comma separated strings"
-      operationId: "findPetsByStatus"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "status"
-        in: "query"
-        description: "Status values that need to be considered for filter"
-        required: true
-        type: "array"
-        items:
-          type: "string"
-          enum:
-          - "available"
-          - "pending"
-          - "sold"
-          default: "available"
-        collectionFormat: "multi"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                accounts:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: Name of the user's account
+                        example: "John Doe's Checking"
+                      type:
+                        type: string
+                        description: "[required] Type of linked account"
+                        example: Checking
+                      currentBalance:
+                        type: number
+                        description: Current Balance in the account.
+                        example: 1001.01
+                      availableBalance:
+                        type: number
+                        description: Current available balance in the account.
+                        example: 900.01
+                      balance:
+                        type: number
+                        description: Current balance in the account.
+                        example: 1001.1
+                      lastPaymentAmount:
+                        type: number
+                        description: "[Credit Card] Last credit card payment amount."
+                        example: 325.00
+                      totalCreditLine:
+                        type: number
+                        description: "[Credit Card] Total extended line of credit."
+                        example: 5000.00
+                      availableCredit:
+                        type: number
+                        description: "[Credit Card] Total currently remaining credit."
+                        example: 4500.00
+                      runningBalance:
+                        type: number
+                        description: "[Credit Card] Total current balance."
+                        example: 500.00
+                      providerId:
+                        type: number
+                        description: "[required] ID for the financial institution providing the account."
+                        example: 123456
+                      providerAccountId:
+                        type: number
+                        description: "[required] ID assigned to the account by the financial institution that provides it."
+                        example: 56435894
+                      id:
+                        type: number
+                        description: "[required] Unique Identifier for the account."
+                        example: 48567463
+                      provider:
+                        type: string
+                        description: Name of the financial institution that provided the account.
+                        example: Awesome Bank
+                      uid:
+                        type: string
+                        description: "[required] Alphanumeric uid referencing the user to whom this account belongs."
+                        example: "1pfmZehrgenWog4kfn3pI4sd"
       responses:
         200:
-          description: "successful operation"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Pet"
-        400:
-          description: "Invalid status value"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-  /pet/findByTags:
-    get:
-      tags:
-      - "pet"
-      summary: "Finds Pets by tags"
-      description: "Multiple tags can be provided with comma separated strings. Use\
-        \ tag1, tag2, tag3 for testing."
-      operationId: "findPetsByTags"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "tags"
-        in: "query"
-        description: "Tags to filter by"
-        required: true
-        type: "array"
-        items:
-          type: "string"
-        collectionFormat: "multi"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            type: "array"
-            items:
-              $ref: "#/definitions/Pet"
-        400:
-          description: "Invalid tag value"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-      deprecated: true
-  /pet/{petId}:
-    get:
-      tags:
-      - "pet"
-      summary: "Find pet by ID"
-      description: "Returns a single pet"
-      operationId: "getPetById"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "petId"
-        in: "path"
-        description: "ID of pet to return"
-        required: true
-        type: "integer"
-        format: "int64"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Pet"
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Pet not found"
-      security:
-      - api_key: []
+          description: A JSON array of unique account ids for successfully created accounts.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accountsUpdated:
+                    type: array
+                    items:
+                      type: string
+                    example: ["myclientID48567463"]
+
+  /transactions:
     post:
-      tags:
-      - "pet"
-      summary: "Updates a pet in the store with form data"
-      description: ""
-      operationId: "updatePetWithForm"
-      consumes:
-      - "application/x-www-form-urlencoded"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "petId"
-        in: "path"
-        description: "ID of pet that needs to be updated"
+      summary: Send User Transactions to FinsightAPI.
+      description: Takes an array of transactions and saves them; returns a success message with the number of transactions received. Advice for new transactions returns asynchronously via webhooks to the client.
+      requestBody:
         required: true
-        type: "integer"
-        format: "int64"
-      - name: "name"
-        in: "formData"
-        description: "Updated name of the pet"
-        required: false
-        type: "string"
-      - name: "status"
-        in: "formData"
-        description: "Updated status of the pet"
-        required: false
-        type: "string"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transactions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      accountid:
+                        type: string
+                        description: An accountid pointing to the ID of the user's account with their financial provider.
+                        example: "1020304"
+                      address:
+                        type: string
+                        description: The street address where the transaction took place.
+                        example: 1234 South Street
+                      amountnum:
+                        type: number
+                        description: "[required] The transaction amount."
+                        example: 14.05
+                      category:
+                        type: string
+                        description: The broad category of the transaction.
+                        example: "Grocery"
+                      city:
+                        type: string
+                        description: The city where the transaction took place
+                        example: "Lafayette"
+                      country:
+                        type: string
+                        description: The country where the transaction took place.
+                        example: USA
+                      currency_code:
+                        type: string
+                        description: The currency code for the type of amountnum.
+                        example: "USD"
+                      date:
+                        type: string
+                        description: "[required] String format for the date of the transaction."
+                        example: 12-30-2020
+                      latitude:
+                        type: number
+                        description: The latitude where the transaction took place.
+                        example: 39.9936
+                      longitude:
+                        type: number
+                        description: The longitude where the transaction took place.
+                        example: 105.0897
+                      original_description:
+                        type: string
+                        description: "[required] Longform string description of the transaction as it appears on the bank statement / banking provider website."
+                        example: PURCHASE 12-30-2020 OTIS BREWING COMP CARD****0293
+                      simple_description:
+                        type: string
+                        description: "[required] A simplified, parsed description of where the transaction occurred."
+                        example: Otis Brewing Company
+                      pending:
+                        type: boolean
+                        description: Describes whether a transaction is pending or posted.
+                        example: false
+                      state:
+                        type: string
+                        description: The state where the transaction took place.
+                        example: CO
+                      transactionid:
+                        type: string
+                        description: "[required] A unique alphanumeric ID assigned to each transaction."
+                        example: "98dfyvnTuasdsdf8sgtvasjjb4"
+                      uid:
+                        type: string
+                        description: "[required] A unique alphanumeric ID assigned to each user. Denotes the user to whom this transaction belongs."
+                        example: "1pfmZehrgenWog4kfn3pI4sd"
+                      zip_code:
+                        type: string
+                        description: The postal code where the transaction took place.
+                        example: "80027"
+                      paymentChannel:
+                        type: string
+                        description: "[Plaid Field] The payment channel for the transaction."
+                        example: "Online"
+                      transactionType:
+                        type: string
+                        description: "[Plaid Field] The transaction's type."
+                        example: "Online"
+                      storeNumber:
+                        type: string
+                        description: "[Plaid Field] If a transaction took place at a chain store, the specific store number of the location the transaction occurred."
+                        example: "1123"
       responses:
-        405:
-          description: "Invalid input"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-    delete:
-      tags:
-      - "pet"
-      summary: "Deletes a pet"
-      description: ""
-      operationId: "deletePet"
-      produces:
-      - "application/json"
-      - "application/xml"
+        201:
+          description: A JSON message showing number of new records.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "1 record was added to the API."
+
+  /client/finsights:
+    get:
+      summary: Get finsights from FinsightAPI.
+      description: Retrieves finsights for all users.
       parameters:
-      - name: "api_key"
-        in: "header"
-        required: false
-        type: "string"
-      - name: "petId"
-        in: "path"
-        description: "Pet id to delete"
-        required: true
-        type: "integer"
-        format: "int64"
+        - in: query
+          name: uid
+          schema:
+            type: string
+          description: Including a userID in this call will return only finsights for a particular user.
       responses:
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Pet not found"
-      security:
-      - petstore_auth:
-        - "write:pets"
-        - "read:pets"
-  /store/order:
+        200:
+          description: A JSON message containing an array of finsight objects.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  finsights:
+                    type: "array"
+                    items:
+                      type: object
+                      properties:
+                        accountid:
+                          type: string
+                          description: An accountid pointing to the ID of the user's account with their financial provider.
+                          example: "1020304"
+                        address:
+                          type: string
+                          description: The street address where the transaction took place.
+                          example: "1234 South Street"
+                        amountnum:
+                          type: number
+                          description: "The transaction amount."
+                          example: 14.05
+                        category:
+                          type: string
+                          description: The broad category of the transaction.
+                          example: "Grocery"
+                        category0:
+                          type: string
+                          description: Another broad category of the transaction.
+                          example: "General Merchandise"
+                        categoryid:
+                          type: string
+                          description: Alphanumeric value for the category of transaction.
+                          example: "44"
+                        city:
+                          type: string
+                          description: The city where the transaction took place.
+                          example: "Lafayette"
+                        country:
+                          type: string
+                          description: The country where the transaction took place.
+                          example: USA
+                        currency_code:
+                          type: string
+                          description: The currency code for the type of amountnum.
+                          example: "USD"
+                        date:
+                          type: object
+                          description: "The date on which the transaction occurred."
+                          properties:
+                            seconds:
+                              type: number
+                            nanoseconds:
+                              type: number
+                          example:
+                            seconds: 1560124800,
+                            nanoseconds: 0
+                        detail_category:
+                          type: number
+                          description: Unique identifier for category from our transaction aggregator.
+                          example: 1175
+                        high_level_category:
+                          type: number
+                          description: Id for a group of similiar transaction categories clubbed together.
+                          example: 10000004
+                        latitude:
+                          type: number
+                          description: The latitude where the transaction took place.
+                          example: 39.9936
+                        longitude:
+                          type: number
+                          description: The longitude where the transaction took place.
+                          example: 105.0897
+                        original_description:
+                          type: string
+                          description: "Longform string description of the transaction as it appears on the bank statement / banking provider website."
+                          example: PURCHASE 12-30-2020 King Soopers COMP CARD****0293
+                        simple_description:
+                          type: string
+                          description: "A simplified, parsed description of where the transaction occurred."
+                          example: King Soopers
+                        pending:
+                          type: boolean
+                          description: Describes whether a transaction is pending or posted.
+                          example: false
+                        state:
+                          type: string
+                          description: The state where the transaction took place.
+                          example: CO
+                        transactionid:
+                          type: string
+                          description: "A unique alphanumeric ID assigned to each transaction."
+                          example: "98dfyvnTuasdsdf8sgtvasjjb4"
+                        uid:
+                          type: string
+                          description: "A unique alphanumeric ID assigned to each user. Denotes the user to whom this transaction belongs."
+                          example: "1pfmZehrgenWog4kfn3pI4sd"
+                        zip_code:
+                          type: string
+                          description: The postal code where the transaction took place.
+                          example: "80027"
+                        insight_text:
+                          type: string
+                          description: A text snippet of the advice.
+                          example: Check out the Basket App to price shop groceries from the comfort of your home!
+                        insight_ctaurl:
+                          type: string
+                          description: A Call to Action URL directing a user to the advice.
+                          example: https://www.greatdeal.com/deal
+                        finsight_image:
+                          type: string
+                          description: A URL string linking the user to a location where the user can take action on the advice.
+                          example: https://firebasestorage.googleapis.com/v0/b/fingoal-9947f.appspot.com/o/246x0w.jpg?alt=media
+                        recommendation:
+                          type: string
+                          description: Title of finsight.
+                          example: Basket app for groceries
+                        paymentChannel:
+                          type: string
+                          description: "[Plaid Field] The payment channel for the transaction."
+                          example: "Online"
+                        transactionType:
+                          type: string
+                          description: "[Plaid Field] The transaction's type."
+                          example: "Online"
+                        storeNumber:
+                          type: string
+                          description: "[Plaid Field] If a transaction took place at a chain store, the specific store number of the location the transaction occurred."
+                          example: "1123"
+  /client/users:
+    get:
+      summary: Get all client's users.
+      description: Retreives all of a client's users within the FinsightAPI.
+      responses:
+        200:
+          description: A JSON message containing an array of user objects.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: "array"
+                    items:
+                      type: object
+                      properties:
+                        uid:
+                          type: string
+                          description: Alphanumeric uid referencing a user.
+                          example: "1pfmZehrgenWog4kfn3pI4sd"
+                        client_id:
+                          type: string
+                          description: Alphanumeric string indicating the organization to which the user belongs.
+                          example: "98dfyvnTuasdsdf8sgtvasjjb4"
+                        email:
+                          type: string
+                          description: Email associated with the user.
+                          example: test@fingoal.com
+                        firstName:
+                          type: string
+                          description: First name associated with the user.
+                          example: John
+                        lastName:
+                          type: string
+                          description: Last name assocaited with the user.
+                          example: Doe
+                        untransferredSavings:
+                          type: number
+                          description: The amount of money fingoal has saved the user that has not yet been transferred.
+                          example: 100
+                        lifetimeSavings:
+                          type: number
+                          description: The amount of money fingoal has saved a user overall.
+                          example: 1000
+                        accounts:
+                          type: array
+                          description: Account IDs associated with this user.
+                          items:
+                            type: string
+                            example: "8567463, 4367469"
+                        preferredCategories:
+                          type: array
+                          description: Where user's think they can save the most.
+                          items:
+                            type: string
+                            example: "restaurants, groceries"
+                        phone:
+                          type: string
+                          description: Phone number associated with this user.
+                          example: "5555555555"
+                        deliveryMethod:
+                          type: string
+                          description: User preference on communication channel.
+                          example: text
+                        deliveryFrequency:
+                          type: string
+                          description: User preference on communication frequency.
+                          example: weekly
+  /client/users/{uid}:
+    get:
+      parameters:
+        - name: uid
+          in: path
+          description: ID of user to get
+          required: true
+          schema:
+            type: string
+          style: simple
+      summary: Get specific user for client.
+      description: Retreives a single specific user belonging to the client.
+      responses:
+        200:
+          description: A JSON message containing an array of user objects.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: "array"
+                    items:
+                      type: object
+                      properties:
+                        uid:
+                          type: string
+                          description: Alphanumeric uid referencing a user.
+                          example: "1pfmZehrgenWog4kfn3pI4sd"
+                        client_id:
+                          type: string
+                          description: Alphanumeric string indicating the organization to which the user belongs.
+                          example: "98dfyvnTuasdsdf8sgtvasjjb4"
+                        email:
+                          type: string
+                          description: Email associated with the user.
+                          example: test@fingoal.com
+                        firstName:
+                          type: string
+                          description: First name associated with the user.
+                          example: John
+                        lastName:
+                          type: string
+                          description: Last name assocaited with the user.
+                          example: Doe
+                        untransferredSavings:
+                          type: number
+                          description: The amount of money fingoal has saved the user that has not yet been transferred.
+                          example: 100
+                        lifetimeSavings:
+                          type: number
+                          description: The amount of money fingoal has saved a user overall.
+                          example: 1000
+                        accounts:
+                          type: array
+                          description: Account IDs associated with this user.
+                          items:
+                            type: string
+                            example: "8567463, 4367469"
+                        preferredCategories:
+                          type: array
+                          description: Where user's think they can save the most.
+                          items:
+                            type: string
+                            example: "restaurants, groceries"
+                        phone:
+                          type: string
+                          description: Phone number associated with this user.
+                          example: "5555555555"
+                        deliveryMethod:
+                          type: string
+                          description: User preference on communication channel.
+                          example: text
+                        deliveryFrequency:
+                          type: string
+                          description: User preference on communication frequency.
+                          example: weekly
+
+  /plaid-transactions:
     post:
-      tags:
-      - "store"
-      summary: "Place an order for a pet"
-      description: ""
-      operationId: "placeOrder"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "order placed for purchasing the pet"
+      summary: Send transactions in Plaid format to the FinsightAPI.
+      description: Allows clients to send transactions from Plaid directly to the FinsightAPI.
+      requestBody:
         required: true
-        schema:
-          $ref: "#/definitions/Order"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transactions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      transaction_id:
+                        type: string
+                        description: "[required] The Plaid issued transactionID for this particular transaction."
+                        example: "dfg74Fi3so8dRsw4378c"
+                      account_id:
+                        type: string
+                        description: "[required] The Plaid-issued accountID for the account this transaction was made under."
+                        example: "F034jf439fSg09432pjegior"
+                      account_owner:
+                        type: string
+                        description: The nickname of the owner of the account associated with this transaction.
+                        example: "JACKRYAN"
+                      amount:
+                        type: number
+                        description: "[required] The amount of the transaction."
+                        example: 25.50
+                      authorized_date:
+                        type: string
+                        description: An ISO formatted data for the transaction if the transaction has posted.
+                        example: "2020-12-30"
+                      iso_currency_code:
+                        type: string
+                        description: "[required] The official currency code for the transaction amount."
+                        example: USD
+                      unofficial_currency_code:
+                        type: string
+                        description: The unofficial currency code for the transaction amount.
+                      category:
+                        type: array
+                        items:
+                          type: string
+                        description: An array of categories pertaining to this transaction.
+                        example: ["Food and Beverage", "Coffee Shops"]
+                      category_id:
+                        type: string
+                        description: A unique alphanumeric ID issued by Plaid referring to the ID of the main category.
+                      date:
+                        type: string
+                        description: "[required] An ISO date for the original date on which the transaction took place."
+                        example: "2020-12-25"
+                      location:
+                        type: object
+                        properties:
+                          adress:
+                            type: string
+                            description: The street address where the transaction took place.
+                            example: "1234 South Street"
+                          city:
+                            type: string
+                            description: The city where the transaction took place.
+                            example: Lafayette
+                          lat:
+                            type: number
+                            description: The latitude where the transaction took place.
+                            example:
+                          lon:
+                            type: number
+                            description: The longitude where the transaction took place.
+                            example:
+                          store_number:
+                            type: number
+                            description: The number of the specific store if the transaction took place at a brick-and-mortar chain.
+                            example: 2243
+                          region:
+                            type: string
+                            description: The broad region where the transaction took place. In the US, this is usually the state.
+                            example: CO
+                          postal_code:
+                            type: string
+                            description: The postal code where the transaction took place.
+                            example: "80027"
+                          country:
+                            type: string
+                            description: The country where the transaction took place.
+                            example: USA
+                      merchant_name:
+                        type: string
+                        description: The Plaid-issued name of the merchant where the transaction is from.
+                        example: Otis Coffee Company
+                      name:
+                        type: string
+                        description: "[required] The main Plaid-issued name of the merchant where the transaction is from"
+                        example: Otis Coffee Company
+                      payment_channel:
+                        type: string
+                        description: The payment channel for the transaction.
+                        example: Online
+                      pending:
+                        type: boolean
+                        description: "[required] Denotes whether the transaction is pending or posted."
+                        example: false
+                      pending_transaction_id:
+                        type: string
+                        description: "The Plaid-issued unique alphanumeric ID for the associated pending transaction record if this transaction has posted."
+                      transaction_type:
+                        type: string
+                        description: Shows the type of the transaction.
+                        example: debit
+                      transaction_code:
+                        type: string
+                      uid:
+                        type: string
+                        description: "[required] The unique alphanumeric ID of the user within either the client's system, or the unique user ID generated by Plaid."
+                        example: 1pfmZehrgenWog4kfn3pI4sd
       responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Order"
-        400:
-          description: "Invalid Order"
-  /store/order/{orderId}:
-    get:
-      tags:
-      - "store"
-      summary: "Find purchase order by ID"
-      description: "For valid response try integer IDs with value >= 1 and <= 10.\
-        \ Other values will generated exceptions"
-      operationId: "getOrderById"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "orderId"
-        in: "path"
-        description: "ID of pet that needs to be fetched"
-        required: true
-        type: "integer"
-        maximum: 10
-        minimum: 1
-        format: "int64"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/Order"
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Order not found"
-    delete:
-      tags:
-      - "store"
-      summary: "Delete purchase order by ID"
-      description: "For valid response try integer IDs with positive integer value.\
-        \ Negative or non-integer values will generate API errors"
-      operationId: "deleteOrder"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "orderId"
-        in: "path"
-        description: "ID of the order that needs to be deleted"
-        required: true
-        type: "integer"
-        minimum: 1
-        format: "int64"
-      responses:
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Order not found"
-  /store/inventory:
-    get:
-      tags:
-      - "store"
-      summary: "Returns pet inventories by status"
-      description: "Returns a map of status codes to quantities"
-      operationId: "getInventory"
-      produces:
-      - "application/json"
-      parameters: []
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            type: "object"
-            additionalProperties:
-              type: "integer"
-              format: "int32"
-      security:
-      - api_key: []
-  /user/createWithArray:
-    post:
-      tags:
-      - "user"
-      summary: "Creates list of users with given input array"
-      description: ""
-      operationId: "createUsersWithArrayInput"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "List of user object"
-        required: true
-        schema:
-          type: "array"
-          items:
-            $ref: "#/definitions/User"
-      responses:
-        default:
-          description: "successful operation"
-  /user/createWithList:
-    post:
-      tags:
-      - "user"
-      summary: "Creates list of users with given input array"
-      description: ""
-      operationId: "createUsersWithListInput"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "List of user object"
-        required: true
-        schema:
-          type: "array"
-          items:
-            $ref: "#/definitions/User"
-      responses:
-        default:
-          description: "successful operation"
-  /user/{username}:
-    get:
-      tags:
-      - "user"
-      summary: "Get user by user name"
-      description: ""
-      operationId: "getUserByName"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "username"
-        in: "path"
-        description: "The name that needs to be fetched. Use user1 for testing. "
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/User"
-        400:
-          description: "Invalid username supplied"
-        404:
-          description: "User not found"
-    put:
-      tags:
-      - "user"
-      summary: "Updated user"
-      description: "This can only be done by the logged in user."
-      operationId: "updateUser"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "username"
-        in: "path"
-        description: "name that need to be updated"
-        required: true
-        type: "string"
-      - in: "body"
-        name: "body"
-        description: "Updated user object"
-        required: true
-        schema:
-          $ref: "#/definitions/User"
-      responses:
-        400:
-          description: "Invalid user supplied"
-        404:
-          description: "User not found"
-    delete:
-      tags:
-      - "user"
-      summary: "Delete user"
-      description: "This can only be done by the logged in user."
-      operationId: "deleteUser"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "username"
-        in: "path"
-        description: "The name that needs to be deleted"
-        required: true
-        type: "string"
-      responses:
-        400:
-          description: "Invalid username supplied"
-        404:
-          description: "User not found"
-  /user/login:
-    get:
-      tags:
-      - "user"
-      summary: "Logs user into the system"
-      description: ""
-      operationId: "loginUser"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - name: "username"
-        in: "query"
-        description: "The user name for login"
-        required: true
-        type: "string"
-      - name: "password"
-        in: "query"
-        description: "The password for login in clear text"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "successful operation"
-          headers:
-            X-Expires-After:
-              type: "string"
-              format: "date-time"
-              description: "date in UTC when token expires"
-            X-Rate-Limit:
-              type: "integer"
-              format: "int32"
-              description: "calls per hour allowed by the user"
-          schema:
-            type: "string"
-        400:
-          description: "Invalid username/password supplied"
-  /user/logout:
-    get:
-      tags:
-      - "user"
-      summary: "Logs out current logged in user session"
-      description: ""
-      operationId: "logoutUser"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters: []
-      responses:
-        default:
-          description: "successful operation"
-  /user:
-    post:
-      tags:
-      - "user"
-      summary: "Create user"
-      description: "This can only be done by the logged in user."
-      operationId: "createUser"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      - "application/xml"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Created user object"
-        required: true
-        schema:
-          $ref: "#/definitions/User"
-      responses:
-        default:
-          description: "successful operation"
-securityDefinitions:
-  api_key:
-    type: "apiKey"
-    name: "api_key"
-    in: "header"
-  petstore_auth:
-    type: "oauth2"
-    authorizationUrl: "https://petstore.swagger.io/oauth/authorize"
-    flow: "implicit"
-    scopes:
-      read:pets: "read your pets"
-      write:pets: "modify pets in your account"
-definitions:
-  ApiResponse:
-    type: "object"
-    properties:
-      code:
-        type: "integer"
-        format: "int32"
-      type:
-        type: "string"
-      message:
-        type: "string"
-  Category:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      name:
-        type: "string"
-    xml:
-      name: "Category"
-  Pet:
-    type: "object"
-    required:
-    - "name"
-    - "photoUrls"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      category:
-        $ref: "#/definitions/Category"
-      name:
-        type: "string"
-        example: "doggie"
-      photoUrls:
-        type: "array"
-        xml:
-          wrapped: true
-        items:
-          type: "string"
-          xml:
-            name: "photoUrl"
-      tags:
-        type: "array"
-        xml:
-          wrapped: true
-        items:
-          xml:
-            name: "tag"
-          $ref: "#/definitions/Tag"
-      status:
-        type: "string"
-        description: "pet status in the store"
-        enum:
-        - "available"
-        - "pending"
-        - "sold"
-    xml:
-      name: "Pet"
-  Tag:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      name:
-        type: "string"
-    xml:
-      name: "Tag"
-  Order:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      petId:
-        type: "integer"
-        format: "int64"
-      quantity:
-        type: "integer"
-        format: "int32"
-      shipDate:
-        type: "string"
-        format: "date-time"
-      status:
-        type: "string"
-        description: "Order Status"
-        enum:
-        - "placed"
-        - "approved"
-        - "delivered"
-      complete:
-        type: "boolean"
-    xml:
-      name: "Order"
-  User:
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      username:
-        type: "string"
-      firstName:
-        type: "string"
-      lastName:
-        type: "string"
-      email:
-        type: "string"
-      password:
-        type: "string"
-      phone:
-        type: "string"
-      userStatus:
-        type: "integer"
-        format: "int32"
-        description: "User Status"
-    xml:
-      name: "User"
-externalDocs:
-  description: "Find out more about Swagger"
-  url: "http://swagger.io"
+        201:
+          description: A JSON message showing number of new records.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "1 record was added to the API."
+
+components:
+  schemas: {}
+  securitySchemes:
+    application:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: "https://dev-jhhgu9vc.auth0.com/oauth/token"
